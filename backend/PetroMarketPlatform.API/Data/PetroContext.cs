@@ -7,11 +7,11 @@ namespace PetroMarketPlatform.API.Data
     {
         public PetroContext(DbContextOptions<PetroContext> options) : base(options) { }
 
-        public DbSet<Commodity> Commodities { get; set; }
-        public DbSet<User> Users { get; set; }
-        public DbSet<PurchaseRequest> PurchaseRequests { get; set; }
-        public DbSet<Offer> Offers { get; set; }
-        public DbSet<FutureSupply> FutureSupplies { get; set; }
+        public DbSet<Commodity> Commodities { get; set; } = default!;
+        public DbSet<User> Users { get; set; } = default!;
+        public DbSet<PurchaseRequest> PurchaseRequests { get; set; } = default!;
+        public DbSet<Offer> Offers { get; set; } = default!;
+public DbSet<FutureSupply> FutureSupplies { get; set; } = default!;
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
