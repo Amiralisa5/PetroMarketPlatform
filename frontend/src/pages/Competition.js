@@ -99,6 +99,7 @@ export function CompetitionRoom() {
   const [comp, setComp] = useState(null);
   const [bids, setBids] = useState([]);
   const [confidential, setConfidential] = useState(false);
+  const [aggregate, setAggregate] = useState(null);
   const [err, setErr] = useState('');
   const [msg, setMsg] = useState('');
   const [price, setPrice] = useState('');
@@ -114,8 +115,9 @@ export function CompetitionRoom() {
       const { data: c } = await api.get(`/api/competitions/${id}`);
       setComp(c);
       const { data: b } = await api.get(`/api/competitions/${id}/bids`);
-      if (b && b.confidential) { setConfidential(true); setBids([]); }
-      else { setConfidential(false); setBids(Array.isArray(b) ? b : []); }
+      if (b && b.confidential) { setConfidential(true); setAggregate(null); setBids([]); }
+      else if (b && b.aggregateOnly) { setConfidential(false); setAggregate(b); setBids(b.myBid ? [b.myBid] : []); }
+      else { setConfidential(false); setAggregate(null); setBids(Array.isArray(b) ? b : []); }
     } catch (e) { setErr(apiError(e)); }
   }, [id]);
 
@@ -187,10 +189,24 @@ export function CompetitionRoom() {
       <h2 className="section-title">رتبه‌بندی پیشنهادها {open && <span className="badge green">به‌روزرسانی زنده</span>}</h2>
       {confidential ? (
         <div className="card"><p className="muted">قیمت‌ها در این مناقصه محرمانه است. تنها «باز بودن مناقصه» عمومی است (BR-11).</p></div>
-      ) : bids.length === 0 ? (
-        <div className="card"><p className="muted">هنوز پیشنهادی ثبت نشده است.</p></div>
       ) : (
-        <div className="card">
+        <>
+          {aggregate && (
+            <div className="card" style={{ marginBottom: 12 }}>
+              <h3 style={{ marginTop: 0 }}>آمار تجمیعی پیشنهادها</h3>
+              <p className="muted" style={{ marginTop: 0 }}>در این مناقصه فقط آمار تجمیعی و ناشناس قیمت‌ها منتشر می‌شود (BR-11).</p>
+              <div className="grid cols-4">
+                <div className="card kpi"><div className="num">{toFa(aggregate.bidCount)}</div><div className="lbl">تعداد پیشنهاد</div></div>
+                <div className="card kpi"><div className="num">{aggregate.lowestPrice != null ? toman(aggregate.lowestPrice) : '—'}</div><div className="lbl">کمترین قیمت</div></div>
+                <div className="card kpi"><div className="num">{aggregate.averagePrice != null ? toman(aggregate.averagePrice) : '—'}</div><div className="lbl">میانگین قیمت</div></div>
+                <div className="card kpi"><div className="num">{aggregate.highestPrice != null ? toman(aggregate.highestPrice) : '—'}</div><div className="lbl">بیشترین قیمت</div></div>
+              </div>
+            </div>
+          )}
+          {bids.length === 0 ? (
+            !aggregate && <div className="card"><p className="muted">هنوز پیشنهادی ثبت نشده است.</p></div>
+          ) : (
+          <div className="card">
           <table>
             <thead>
               <tr>
@@ -246,6 +262,8 @@ export function CompetitionRoom() {
             </div>
           )}
         </div>
+          )}
+        </>
       )}
 
       {/* Operator / admin controls */}
