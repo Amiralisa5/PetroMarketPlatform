@@ -139,7 +139,13 @@ public class AuthService : IAuthService
     /// <summary>Normalize Iranian mobile forms (+98 / 0098 / 9xxxxxxxxx) to 0XXXXXXXXXX.</summary>
     private static string Normalize(string mobile)
     {
-        var m = new string(mobile.Where(char.IsDigit).ToArray());
+        // Fold ASCII, Persian (۰-۹) and Arabic-Indic (٠-٩) digits to ASCII 0-9 so a Persian-digit
+        // entry (the UI even shows Persian placeholders) matches the stored 0XXXXXXXXXX form.
+        var m = new string(mobile
+            .Select(c => System.Globalization.CharUnicodeInfo.GetDecimalDigitValue(c))
+            .Where(v => v >= 0)
+            .Select(v => (char)('0' + v))
+            .ToArray());
         if (m.StartsWith("0098")) m = m[4..];
         else if (m.StartsWith("98") && m.Length == 12) m = m[2..];
         if (m.Length == 10 && m.StartsWith("9")) m = "0" + m;
