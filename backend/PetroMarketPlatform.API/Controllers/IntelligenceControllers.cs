@@ -97,10 +97,16 @@ public class PricesController : ApiControllerBase
     [HttpGet("current")]
     public async Task<IActionResult> Current(CancellationToken ct)
     {
-        var latest = await _db.PriceQuotes
-            .GroupBy(p => p.CommodityId)
-            .Select(g => g.OrderByDescending(p => p.QuotedAt).First())
+        // Pick the latest quote per commodity in memory: EF Core can't translate
+        // "select the whole row per group via First()" and throws at runtime (SQLite/SqlServer).
+        var quotes = await _db.PriceQuotes
+            .Select(p => new { p.CommodityId, p.Price, p.Currency, p.Market, p.QuotedAt })
             .ToListAsync(ct);
+
+        var latest = quotes
+            .GroupBy(p => p.CommodityId)
+            .Select(g => g.OrderByDescending(p => p.QuotedAt).First());
+
         var commodities = await _db.Commodities.ToDictionaryAsync(c => c.Id, c => c.Name, ct);
         return Ok(latest.Select(p => new
         {

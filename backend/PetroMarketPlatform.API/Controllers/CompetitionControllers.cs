@@ -164,16 +164,34 @@ public class CompetitionsController : ApiControllerBase
         }
 
         // Confidential / AggregateOnly + non-owner/non-monitor: never leak rivals' prices.
-        // A participating seller may see only their OWN bid (with its true rank).
+        // A participating seller may still see only their OWN bid (with its true rank).
+        BidPublicDto? myBid = null;
         if (viewerId is not null)
         {
             var idx = ranked.FindIndex(b => b.SellerId == viewerId);
             if (idx >= 0)
             {
                 var b = ranked[idx];
-                return Ok(new[] { new BidPublicDto(b.Id, idx + 1, b.Price, b.Quantity, b.CurrentVersion, b.SubmittedAt, true) });
+                myBid = new BidPublicDto(b.Id, idx + 1, b.Price, b.Quantity, b.CurrentVersion, b.SubmittedAt, true);
             }
         }
+
+        // BR-11 AggregateOnly: publish anonymized aggregate price stats (no per-rival prices or identities).
+        if (c.Visibility == CompetitionVisibility.AggregateOnly)
+        {
+            return Ok(new
+            {
+                aggregateOnly = true,
+                bidCount = ranked.Count,
+                lowestPrice = ranked.Count > 0 ? ranked.Min(b => b.Price) : (decimal?)null,
+                averagePrice = ranked.Count > 0 ? Math.Round(ranked.Average(b => b.Price), 0) : (decimal?)null,
+                highestPrice = ranked.Count > 0 ? ranked.Max(b => b.Price) : (decimal?)null,
+                myBid
+            });
+        }
+
+        // Confidential: a participant sees only their own bid; everyone else just the count.
+        if (myBid is not null) return Ok(new[] { myBid });
         return Ok(new { confidential = true, bidCount = ranked.Count });
     }
 
