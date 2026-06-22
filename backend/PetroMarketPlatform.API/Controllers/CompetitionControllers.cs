@@ -53,7 +53,15 @@ public class RfqsController : ApiControllerBase
     public async Task<IActionResult> Get(int id, CancellationToken ct)
     {
         var r = await _db.Rfqs.Include(x => x.Commodity).FirstOrDefaultAsync(x => x.Id == id, ct);
-        return r is null ? NotFound() : Ok(new RfqDto(r.Id, r.BuyerId, r.CommodityId, r.Commodity.Name,
+        if (r is null) return NotFound();
+
+        // BR-3 anonymity: the buyer's identity is hidden from sellers / the public.
+        // Only the RFQ owner and monitors (operator/admin) see the real BuyerId; others get 0.
+        var viewerId = CurrentUserIdOrNull;
+        var privileged = HasPerm(Permissions.CompetitionMonitor) || (viewerId is not null && r.BuyerId == viewerId);
+        var buyerId = privileged ? r.BuyerId : 0;
+
+        return Ok(new RfqDto(r.Id, buyerId, r.CommodityId, r.Commodity.Name,
             r.Quantity, r.DeliveryTerms, r.PaymentTerms, r.Notes, r.Deadline, r.Status.ToString(), r.CreatedAt));
     }
 }
