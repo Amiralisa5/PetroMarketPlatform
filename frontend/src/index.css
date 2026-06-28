@@ -215,6 +215,13 @@ input:focus, select:focus, textarea:focus { outline: none; border-color: var(--t
 .stat-band > div { background: var(--card); padding: 22px 16px; text-align: center; }
 @media (max-width: 640px) { .stat-band { grid-template-columns: repeat(2, 1fr); } }
 
+/* ---- Avatar ---- */
+.avatar {
+  width: 56px; height: 56px; border-radius: 16px; flex: none; display: grid; place-items: center;
+  background: linear-gradient(140deg, var(--teal), var(--teal-darker)); color: #fff;
+  font-size: 24px; font-weight: 800; box-shadow: 0 6px 14px -6px rgba(15, 118, 110, .5);
+}
+
 /* ---- Icon circle ---- */
 .icon-circle {
   width: 46px; height: 46px; border-radius: 13px; display: grid; place-items: center;
