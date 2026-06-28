@@ -191,8 +191,8 @@ export function Stars({ value = 0 }) {
   );
 }
 
-export function Badge({ kind = '', children }) {
-  return <span className={`badge ${kind}`}>{children}</span>;
+export function Badge({ kind = '', children, style }) {
+  return <span className={`badge ${kind}`} style={style}>{children}</span>;
 }
 
 // ---- Lightweight SVG line chart (no external deps; ECharts in prod per §8) ----

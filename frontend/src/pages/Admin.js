@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { api, apiError } from '../api';
 import { jalali, toman, num, kycLabel, toFa } from '../format';
-import { Spinner, Alert, Badge } from '../components';
+import { Spinner, Alert, Badge, Icon, EmptyState } from '../components';
 
 // ---------- Operator: KYC review queue ----------
 export function KycQueue() {
@@ -18,28 +18,33 @@ export function KycQueue() {
 
   if (cases === null) return <Spinner />;
   return (
-    <div>
+    <div className="fade-up">
       <h1>صف بررسی احراز هویت</h1>
       <p className="sub">بررسی مدارک، تأیید/رد/درخواست اطلاعات بیشتر — همه اقدامات حسابرسی می‌شوند.</p>
       <Alert kind="error">{err}</Alert><Alert kind="ok">{msg}</Alert>
-      {cases.length === 0 ? <p className="muted">صف خالی است.</p> : cases.map((c) => (
+      {cases.length === 0 ? <EmptyState icon="check">صف بررسی خالی است — همه پرونده‌ها رسیدگی شده‌اند.</EmptyState> : cases.map((c) => (
         <div key={c.id} className="card" style={{ marginBottom: 14 }}>
           <div className="between">
-            <div>
-              <strong>{c.companyName || c.userName || `کاربر ${c.userId}`}</strong>
-              <div className="muted">پرونده #{toFa(c.id)} · وضعیت: {kycLabel(c.status)} · {jalali(c.updatedAt, true)}</div>
+            <div className="flex" style={{ gap: 12 }}>
+              <div className="avatar" style={{ width: 44, height: 44, fontSize: 18, borderRadius: 12 }}>
+                {(c.companyName || c.userName || 'ک').trim().charAt(0)}
+              </div>
+              <div>
+                <strong>{c.companyName || c.userName || `کاربر ${c.userId}`}</strong>
+                <div className="muted" style={{ fontSize: 13 }}>پرونده #{toFa(c.id)} · {jalali(c.updatedAt, true)}</div>
+              </div>
             </div>
             <Badge kind="amber">{kycLabel(c.status)}</Badge>
           </div>
-          <div className="muted" style={{ margin: '8px 0' }}>
+          <div className="muted" style={{ margin: '12px 0', fontSize: 14 }}>
             مدارک: {c.documents.length === 0 ? 'ندارد' : c.documents.map((d) => `${d.type} (${d.fileName})`).join('، ')}
           </div>
-          <label>یادداشت/دلیل</label>
+          <label>یادداشت / دلیل</label>
           <input value={notes[c.id] || ''} onChange={(e) => setNotes({ ...notes, [c.id]: e.target.value })} placeholder="در صورت رد یا درخواست اطلاعات، الزامی است" />
-          <div className="flex" style={{ marginTop: 10 }}>
-            <button className="btn sm" onClick={() => review(c.id, 'approve')}>تأیید</button>
-            <button className="btn ghost sm" onClick={() => review(c.id, 'more_info')}>اطلاعات بیشتر</button>
-            <button className="btn danger sm" onClick={() => review(c.id, 'reject')}>رد</button>
+          <div className="flex" style={{ marginTop: 12 }}>
+            <button className="btn sm" onClick={() => review(c.id, 'approve')}><Icon name="check" size={15} /> تأیید</button>
+            <button className="btn ghost sm" onClick={() => review(c.id, 'more_info')}><Icon name="bell" size={15} /> اطلاعات بیشتر</button>
+            <button className="btn danger sm" onClick={() => review(c.id, 'reject')}><Icon name="close" size={15} /> رد</button>
           </div>
         </div>
       ))}
@@ -72,55 +77,59 @@ export function AdminUsers() {
 
   if (users === null) return <Spinner />;
   return (
-    <div>
+    <div className="fade-up">
       <h1>مدیریت کاربران و دسترسی‌ها</h1>
       <p className="sub">نقش‌ها مجموعه‌ای از دسترسی‌های نام‌دار هستند و بدون تغییر کد قابل ویرایش‌اند (RBAC، §3).</p>
       <Alert kind="error">{err}</Alert><Alert kind="ok">{msg}</Alert>
 
-      <div className="card">
-        <table>
-          <thead><tr><th>#</th><th>موبایل</th><th>نام</th><th>KYC</th><th>نقش‌ها</th></tr></thead>
-          <tbody>
-            {users.map((u) => (
-              <tr key={u.id}>
-                <td>{toFa(u.id)}</td><td style={{ direction: 'ltr', textAlign: 'right' }}>{toFa(u.mobile)}</td>
-                <td>{u.fullName}<div className="muted" style={{ fontSize: 12 }}>{u.company}</div></td>
-                <td><Badge kind={u.kycStatus === 'Approved' ? 'green' : 'amber'}>{kycLabel(u.kycStatus)}</Badge></td>
-                <td>
-                  <div className="flex" style={{ flexWrap: 'wrap' }}>
-                    {allRoles.map((r) => (
-                      <label key={r} className="flex" style={{ margin: 0, fontSize: 12 }}>
-                        <input type="checkbox" style={{ width: 'auto' }} checked={u.roles.includes(r)} onChange={() => toggleRole(u, r)} /> {r}
-                      </label>
-                    ))}
-                  </div>
-                </td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
+      <div className="card" style={{ padding: 0 }}>
+        <div className="table-wrap">
+          <table>
+            <thead><tr><th>#</th><th>موبایل</th><th>نام</th><th>KYC</th><th>نقش‌ها</th></tr></thead>
+            <tbody>
+              {users.map((u) => (
+                <tr key={u.id}>
+                  <td>{toFa(u.id)}</td><td style={{ direction: 'ltr', textAlign: 'right' }}>{toFa(u.mobile)}</td>
+                  <td>{u.fullName}<div className="muted" style={{ fontSize: 12 }}>{u.company}</div></td>
+                  <td><Badge kind={u.kycStatus === 'Approved' ? 'green' : 'amber'}>{kycLabel(u.kycStatus)}</Badge></td>
+                  <td>
+                    <div className="flex" style={{ flexWrap: 'wrap' }}>
+                      {allRoles.map((r) => (
+                        <label key={r} className="flex" style={{ margin: 0, fontSize: 12 }}>
+                          <input type="checkbox" style={{ width: 'auto' }} checked={u.roles.includes(r)} onChange={() => toggleRole(u, r)} /> {r}
+                        </label>
+                      ))}
+                    </div>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
       </div>
 
       <h2 className="section-title">ماتریس دسترسی نقش‌ها</h2>
-      <div className="card" style={{ overflowX: 'auto' }}>
-        <table>
-          <thead>
-            <tr><th>نقش</th>{roleInfo.allPermissions.map((p) => <th key={p} style={{ fontSize: 11 }}>{p}</th>)}</tr>
-          </thead>
-          <tbody>
-            {roleInfo.roles.map((role) => (
-              <tr key={role.id}>
-                <td><strong>{role.name}</strong></td>
-                {roleInfo.allPermissions.map((p) => (
-                  <td key={p} className="center">
-                    <input type="checkbox" style={{ width: 'auto' }}
-                      checked={role.permissions.includes(p)} onChange={() => toggleRolePerm(role, p)} />
-                  </td>
-                ))}
-              </tr>
-            ))}
-          </tbody>
-        </table>
+      <div className="card" style={{ padding: 0 }}>
+        <div className="table-wrap">
+          <table>
+            <thead>
+              <tr><th>نقش</th>{roleInfo.allPermissions.map((p) => <th key={p} style={{ fontSize: 11 }}>{p}</th>)}</tr>
+            </thead>
+            <tbody>
+              {roleInfo.roles.map((role) => (
+                <tr key={role.id}>
+                  <td><strong>{role.name}</strong></td>
+                  {roleInfo.allPermissions.map((p) => (
+                    <td key={p} className="center">
+                      <input type="checkbox" style={{ width: 'auto' }}
+                        checked={role.permissions.includes(p)} onChange={() => toggleRolePerm(role, p)} />
+                    </td>
+                  ))}
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
       </div>
     </div>
   );
@@ -134,26 +143,35 @@ export function AdminKpis() {
   if (err) return <Alert kind="error">{err}</Alert>;
   if (!k) return <Spinner />;
   return (
-    <div>
+    <div className="fade-up">
       <h1>گزارش‌ها و شاخص‌های کلیدی</h1>
       <p className="sub">شاخص‌های ثبت‌نام، نرخ موفقیت مناقصه و KPIهای پلتفرم.</p>
       <div className="grid cols-4">
-        <Kpi n={num(k.totalUsers)} l="کل کاربران" />
-        <Kpi n={num(k.kycApproved)} l="احرازهویت تأییدشده" />
-        <Kpi n={num(k.kycPending)} l="در صف احراز هویت" />
-        <Kpi n={num(k.openCompetitions)} l="مناقصه‌های باز" />
-        <Kpi n={num(k.totalCompetitions)} l="کل مناقصه‌ها" />
-        <Kpi n={num(k.awardedCompetitions)} l="مناقصه‌های برنده‌دار" />
-        <Kpi n={`${toFa(Math.round((k.competitionSuccessRate || 0) * 100))}٪`} l="نرخ موفقیت مناقصه" />
-        <Kpi n={num(k.transactions)} l="کل معاملات" />
+        <Kpi icon="shield" n={num(k.totalUsers)} l="کل کاربران" />
+        <Kpi icon="check" n={num(k.kycApproved)} l="احرازهویت تأییدشده" />
+        <Kpi icon="bell" n={num(k.kycPending)} l="در صف احراز هویت" />
+        <Kpi icon="gavel" n={num(k.openCompetitions)} l="مناقصه‌های باز" />
+        <Kpi icon="gavel" n={num(k.totalCompetitions)} l="کل مناقصه‌ها" />
+        <Kpi icon="check" n={num(k.awardedCompetitions)} l="مناقصه‌های برنده‌دار" />
+        <Kpi icon="trending" n={`${toFa(Math.round((k.competitionSuccessRate || 0) * 100))}٪`} l="نرخ موفقیت مناقصه" />
+        <Kpi icon="store" n={num(k.transactions)} l="کل معاملات" />
       </div>
-      <div className="card" style={{ marginTop: 16 }}>
-        <div className="kpi"><div className="num">{toman(k.grossMerchandiseValue)}</div><div className="lbl">ارزش کل معاملات (GMV)</div></div>
+      <div className="card" style={{ marginTop: 18, background: 'linear-gradient(135deg, var(--teal-darker), var(--teal))', color: '#fff', textAlign: 'center', border: 'none' }}>
+        <div className="icon-circle" style={{ margin: '0 auto 10px', background: 'rgba(255,255,255,.16)', color: '#fff' }}><Icon name="trending" /></div>
+        <div className="num" style={{ fontSize: 30, fontWeight: 800, color: '#fff' }}>{toman(k.grossMerchandiseValue)}</div>
+        <div style={{ opacity: .9, fontSize: 14 }}>ارزش کل معاملات (GMV)</div>
       </div>
     </div>
   );
 }
-function Kpi({ n, l }) { return <div className="card kpi"><div className="num">{n}</div><div className="lbl">{l}</div></div>; }
+function Kpi({ n, l, icon }) {
+  return (
+    <div className="card kpi">
+      {icon && <div className="icon-circle" style={{ margin: '0 auto 10px' }}><Icon name={icon} /></div>}
+      <div className="num">{n}</div><div className="lbl">{l}</div>
+    </div>
+  );
+}
 
 // ---------- Admin/Operator: audit log ----------
 export function AuditLog() {
@@ -163,24 +181,28 @@ export function AuditLog() {
   if (err) return <Alert kind="error">{err}</Alert>;
   if (rows === null) return <Spinner />;
   return (
-    <div>
+    <div className="fade-up">
       <h1>ردگیری حسابرسی</h1>
       <p className="sub">لاگ اقدامات ممتاز و آشکارسازی هویت (§7).</p>
-      <div className="card" style={{ overflowX: 'auto' }}>
-        <table>
-          <thead><tr><th>#</th><th>اقدام</th><th>موجودیت</th><th>شناسه</th><th>کاربر</th><th>زمان</th></tr></thead>
-          <tbody>
-            {rows.map((a) => (
-              <tr key={a.id}>
-                <td>{toFa(a.id)}</td><td><Badge>{a.action}</Badge></td>
-                <td className="muted">{a.entity}</td><td className="muted">{a.entityId}</td>
-                <td className="muted">{a.actorId != null ? toFa(a.actorId) : '—'}</td>
-                <td className="muted">{jalali(a.createdAt, true)}</td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
-      </div>
+      {rows.length === 0 ? <EmptyState icon="shield">رویداد حسابرسی‌ای ثبت نشده است.</EmptyState> : (
+        <div className="card" style={{ padding: 0 }}>
+          <div className="table-wrap">
+            <table>
+              <thead><tr><th>#</th><th>اقدام</th><th>موجودیت</th><th>شناسه</th><th>کاربر</th><th>زمان</th></tr></thead>
+              <tbody>
+                {rows.map((a) => (
+                  <tr key={a.id}>
+                    <td>{toFa(a.id)}</td><td><Badge>{a.action}</Badge></td>
+                    <td className="muted">{a.entity}</td><td className="muted">{a.entityId}</td>
+                    <td className="muted">{a.actorId != null ? toFa(a.actorId) : '—'}</td>
+                    <td className="muted">{jalali(a.createdAt, true)}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

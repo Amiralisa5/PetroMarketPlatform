@@ -3,7 +3,7 @@ import { Link } from 'react-router-dom';
 import { api, apiError } from '../api';
 import { useAuth } from '../auth';
 import { jalali, toman, num, kycLabel, compStatusLabel, toFa } from '../format';
-import { Spinner, Alert, Badge } from '../components';
+import { Spinner, Alert, Badge, Icon, EmptyState } from '../components';
 
 // ---------- Dashboard hub ----------
 export function Dashboard() {
@@ -36,20 +36,20 @@ export function Dashboard() {
       )}
 
       <div className="grid cols-4" style={{ margin: '8px 0 20px' }}>
-        {has('rfq.manage') && <Tile to="/rfq/new" title="ثبت RFQ" desc="درخواست خرید جدید" />}
-        {has('product.manage') && <Tile to="/seller/manage/products" title="محصولات من" desc="مدیریت کاتالوگ" />}
-        {has('kyc.complete') && <Tile to="/kyc" title="احراز هویت" desc={kycLabel(user?.kycStatus)} />}
-        {has('kyc.review') && <Tile to="/operator/kyc" title="صف احراز هویت" desc="بررسی اپراتور" />}
-        {has('users.manage') && <Tile to="/admin/users" title="مدیریت کاربران" desc="نقش‌ها و دسترسی‌ها" />}
-        {has('reports.view') && <Tile to="/admin/kpis" title="گزارش‌ها و KPI" desc="شاخص‌های پلتفرم" />}
-        {has('audit.view') && <Tile to="/admin/audit" title="ردگیری حسابرسی" desc="لاگ اقدامات" />}
-        <Tile to="/competitions" title="مناقصه‌ها" desc="مشاهده مناقصه‌های باز" />
+        {has('rfq.manage') && <Tile icon="gavel" to="/rfq/new" title="ثبت RFQ" desc="درخواست خرید جدید" />}
+        {has('product.manage') && <Tile icon="store" to="/seller/manage/products" title="محصولات من" desc="مدیریت کاتالوگ" />}
+        {has('kyc.complete') && <Tile icon="shield" to="/kyc" title="احراز هویت" desc={kycLabel(user?.kycStatus)} />}
+        {has('kyc.review') && <Tile icon="check" to="/operator/kyc" title="صف احراز هویت" desc="بررسی اپراتور" />}
+        {has('users.manage') && <Tile icon="shield" to="/admin/users" title="مدیریت کاربران" desc="نقش‌ها و دسترسی‌ها" />}
+        {has('reports.view') && <Tile icon="trending" to="/admin/kpis" title="گزارش‌ها و KPI" desc="شاخص‌های پلتفرم" />}
+        {has('audit.view') && <Tile icon="lock" to="/admin/audit" title="ردگیری حسابرسی" desc="لاگ اقدامات" />}
+        <Tile icon="gavel" to="/competitions" title="مناقصه‌ها" desc="مشاهده مناقصه‌های باز" />
       </div>
 
       {has('rfq.manage') && (
         <>
           <h2 className="section-title">درخواست‌های خرید من</h2>
-          {rfqs.length === 0 ? <p className="muted">هنوز RFQ ثبت نکرده‌اید.</p> : (
+          {rfqs.length === 0 ? <EmptyState icon="gavel">هنوز درخواست خریدی ثبت نکرده‌اید.</EmptyState> : (
             <div className="card"><table>
               <thead><tr><th>#</th><th>کالا</th><th>مقدار</th><th>مهلت</th><th>وضعیت</th><th></th></tr></thead>
               <tbody>
@@ -68,7 +68,7 @@ export function Dashboard() {
       )}
 
       <h2 className="section-title">معاملات من</h2>
-      {txns.length === 0 ? <p className="muted">معامله‌ای ثبت نشده.</p> : (
+      {txns.length === 0 ? <EmptyState icon="store">هنوز معامله‌ای ثبت نشده است.</EmptyState> : (
         <div className="card"><table>
           <thead><tr><th>#</th><th>کالا</th><th>مقدار</th><th>قیمت</th><th>وضعیت</th><th>تاریخ</th></tr></thead>
           <tbody>
@@ -86,8 +86,9 @@ export function Dashboard() {
   );
 }
 
-function Tile({ to, title, desc }) {
-  return <Link to={to} className="card" style={{ textDecoration: 'none' }}>
+function Tile({ to, title, desc, icon }) {
+  return <Link to={to} className="card hover" style={{ textDecoration: 'none', display: 'block' }}>
+    <div className="icon-circle" style={{ width: 40, height: 40, borderRadius: 11, marginBottom: 10 }}><Icon name={icon || 'arrow'} size={19} /></div>
     <div style={{ fontWeight: 700, color: 'var(--teal-dark)' }}>{title}</div>
     <div className="muted" style={{ fontSize: 13 }}>{desc}</div>
   </Link>;
@@ -211,7 +212,7 @@ export function SellerProducts() {
       </form>
 
       <div className="card" style={{ marginTop: 16 }}>
-        {items.length === 0 ? <p className="muted">محصولی ثبت نشده.</p> : (
+        {items.length === 0 ? <EmptyState icon="store">هنوز محصولی ثبت نکرده‌اید.</EmptyState> : (
           <table>
             <thead><tr><th>کالا</th><th>مشخصات</th><th>موجودی</th><th>قیمت</th><th></th></tr></thead>
             <tbody>
@@ -240,7 +241,7 @@ export function Notifications() {
     <div>
       <h1>اعلان‌ها</h1>
       <p className="sub">رویدادهای تراکنشی از طریق سرویس واحد اعلان (SMS / Push / درون‌برنامه‌ای).</p>
-      {rows.length === 0 ? <p className="muted">اعلانی ندارید.</p> : (
+      {rows.length === 0 ? <EmptyState icon="bell">اعلانی ندارید.</EmptyState> : (
         <div className="card">
           {rows.map((n) => (
             <div key={n.id} className="between" style={{ padding: '10px 0', borderBottom: '1px solid var(--line)', opacity: n.readAt ? 0.6 : 1 }}>
@@ -277,7 +278,7 @@ export function Surveys() {
       <h1>نظرسنجی پس از معامله</h1>
       <p className="sub">تکمیل نظرسنجی برای هر دو طرف الزامی است؛ در غیر این صورت معاملات بعدی مسدود می‌شود (BR-9).</p>
       <Alert kind="error">{err}</Alert><Alert kind="ok">{msg}</Alert>
-      {pending.length === 0 ? <p className="muted">نظرسنجی معلقی ندارید.</p> : pending.map((s) => {
+      {pending.length === 0 ? <EmptyState icon="check">نظرسنجی معلقی ندارید.</EmptyState> : pending.map((s) => {
         const f = form[s.transactionId] || { score: 5, onTimeScore: 5, infoAccuracyScore: 5, comments: '' };
         return (
           <div key={s.id} className="card" style={{ marginBottom: 14 }}>

@@ -3,7 +3,7 @@ import { Link, useParams, useNavigate } from 'react-router-dom';
 import { api, apiError } from '../api';
 import { useAuth } from '../auth';
 import { jalali, toman, num, compStatusLabel, toFa } from '../format';
-import { Spinner, Alert, Badge, Stars } from '../components';
+import { Spinner, Alert, Badge, Stars, Icon, EmptyState } from '../components';
 
 // ---------- Public list of open competitions ----------
 export function Competitions() {
@@ -13,19 +13,23 @@ export function Competitions() {
     <div>
       <h1>مناقصه‌های باز</h1>
       <p className="sub">مناقصه‌های معکوسِ در جریان. قیمت‌ها به‌صورت پیش‌فرض محرمانه‌اند (BR-11).</p>
-      {rows === null ? <Spinner /> : rows.length === 0 ? <p className="muted">در حال حاضر مناقصه‌ی بازی وجود ندارد.</p> : (
+      {rows === null ? <Spinner /> : rows.length === 0 ? <EmptyState icon="gavel">در حال حاضر مناقصه‌ی بازی وجود ندارد.</EmptyState> : (
         <div className="grid cols-3">
           {rows.map((c) => (
-            <div key={c.id} className="card">
+            <Link key={c.id} to={`/competition/${c.id}`} className="card hover" style={{ display: 'block' }}>
               <div className="between">
                 <Badge kind="green">باز</Badge>
                 <span className="muted" style={{ fontSize: 13 }}>{toFa(c.bidCount)} پیشنهاد</span>
               </div>
-              <h3 style={{ margin: '10px 0 4px' }}>{c.commodity}</h3>
-              <p className="muted">مقدار: {num(c.quantity)} تن</p>
-              <p className="muted">مهلت: {jalali(c.bidWindowEnd, true)}</p>
-              <Link to={`/competition/${c.id}`} className="btn ghost sm">ورود به مناقصه</Link>
-            </div>
+              <div className="icon-circle" style={{ margin: '14px 0 10px' }}><Icon name="gavel" size={22} /></div>
+              <h3 style={{ margin: '0 0 8px' }}>{c.commodity}</h3>
+              <p className="muted" style={{ margin: '2px 0' }}>مقدار: {num(c.quantity)} تن</p>
+              <p className="muted" style={{ margin: '2px 0 14px' }}>
+                <Icon name="bell" size={14} style={{ verticalAlign: '-2px', marginLeft: 4 }} />
+                مهلت: {jalali(c.bidWindowEnd, true)}
+              </p>
+              <span className="btn ghost sm">ورود به مناقصه <Icon name="arrow" size={15} /></span>
+            </Link>
           ))}
         </div>
       )}
