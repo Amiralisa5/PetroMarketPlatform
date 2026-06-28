@@ -258,6 +258,33 @@ input:focus, select:focus, textarea:focus { outline: none; border-color: var(--t
 
 .notif-dot { background: var(--danger); color: #fff; border-radius: 999px; font-size: 11px; padding: 0 6px; min-width: 18px; height: 18px; display: inline-flex; align-items: center; justify-content: center; font-weight: 700; }
 
+/* ---- Live pulse dot ---- */
+.live-dot { width: 8px; height: 8px; border-radius: 50%; background: #16a34a; display: inline-block; animation: pulse 1.6s var(--ease) infinite; }
+@keyframes pulse {
+  0% { box-shadow: 0 0 0 0 rgba(22, 163, 74, .5); }
+  70% { box-shadow: 0 0 0 7px rgba(22, 163, 74, 0); }
+  100% { box-shadow: 0 0 0 0 rgba(22, 163, 74, 0); }
+}
+
+/* ---- Rank medal badge ---- */
+.rank-badge {
+  width: 30px; height: 30px; border-radius: 50%; display: inline-grid; place-items: center;
+  font-weight: 800; font-size: 14px; background: #f1f5f9; color: var(--muted); flex: none;
+  font-variant-numeric: tabular-nums;
+}
+.rank-badge.r1 { background: #fef3c7; color: #b45309; }
+.rank-badge.r2 { background: #e5e7eb; color: #475569; }
+.rank-badge.r3 { background: #ffedd5; color: #c2410c; }
+
+/* ---- Lifecycle stepper ---- */
+.stepper { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; margin: 14px 0 4px; }
+.stepper .st { display: inline-flex; align-items: center; gap: 7px; font-size: 13px; color: var(--muted); }
+.stepper .st .dot { width: 24px; height: 24px; border-radius: 50%; display: grid; place-items: center; background: #f1f5f9; color: var(--muted); font-size: 12px; font-weight: 700; }
+.stepper .st.done .dot { background: var(--teal); color: #fff; }
+.stepper .st.active .dot { background: var(--accent); color: #fff; }
+.stepper .st.active { color: var(--ink); font-weight: 600; }
+.stepper .sep { width: 26px; height: 2px; background: var(--line); border-radius: 2px; }
+
 /* ---- Motion utilities ---- */
 .fade-up { animation: fadeUp .5s var(--ease) both; }
 @keyframes fadeUp { from { opacity: 0; transform: translateY(12px); } to { opacity: 1; transform: none; } }
