@@ -154,21 +154,29 @@ export function CompetitionRoom() {
   const awarded = comp.status === 'Awarded';
 
   return (
-    <div>
-      <Link to="/competitions">← همه مناقصه‌ها</Link>
+    <div className="fade-up">
+      <Link to="/competitions" className="muted">→ همه مناقصه‌ها</Link>
       <div className="card" style={{ marginTop: 12 }}>
-        <div className="between">
-          <div>
-            <h1 style={{ margin: 0 }}>مناقصه #{toFa(comp.id)} — {comp.commodityName}</h1>
-            <p className="muted">مقدار: {num(comp.quantity)} تن · مهلت: {jalali(comp.bidWindowEnd, true)}</p>
+        <div className="between" style={{ flexWrap: 'wrap', gap: 14 }}>
+          <div className="flex" style={{ gap: 14 }}>
+            <div className="icon-circle" style={{ margin: 0 }}><Icon name="gavel" size={22} /></div>
+            <div>
+              <h1 style={{ margin: 0, fontSize: 24 }}>مناقصه #{toFa(comp.id)} — {comp.commodityName}</h1>
+              <p className="muted" style={{ margin: '2px 0 0' }}>
+                مقدار: {num(comp.quantity)} تن ·
+                <Icon name="bell" size={13} style={{ verticalAlign: '-2px', margin: '0 4px' }} />
+                مهلت: {jalali(comp.bidWindowEnd, true)}
+              </p>
+            </div>
           </div>
           <StatusBadge status={comp.status} />
         </div>
-        {comp.rfq?.notes && <p className="muted">یادداشت خریدار: {comp.rfq.notes}</p>}
-        <div className="flex" style={{ flexWrap: 'wrap' }}>
+        <LifeStepper status={comp.status} />
+        {comp.rfq?.notes && <p className="muted" style={{ marginBottom: 6 }}>یادداشت خریدار: {comp.rfq.notes}</p>}
+        <div className="flex" style={{ flexWrap: 'wrap', marginTop: 10 }}>
           {comp.rfq?.deliveryTerms && <Badge>تحویل: {comp.rfq.deliveryTerms}</Badge>}
           {comp.rfq?.paymentTerms && <Badge>پرداخت: {comp.rfq.paymentTerms}</Badge>}
-          <Badge kind="teal">شفافیت: {comp.visibility}</Badge>
+          <Badge kind="teal"><Icon name="lock" size={12} /> شفافیت: {comp.visibility}</Badge>
         </div>
       </div>
 
@@ -178,39 +186,40 @@ export function CompetitionRoom() {
       {/* Seller bidding form */}
       {isSeller && !isOwner && (
         <div className="card" style={{ marginTop: 16 }}>
-          <h3 style={{ marginTop: 0 }}>ثبت / اصلاح پیشنهاد</h3>
+          <h3 className="flex" style={{ marginTop: 0 }}><Icon name="gavel" size={18} /> ثبت / اصلاح پیشنهاد</h3>
           {open ? (
             <form className="form-row" onSubmit={submitBid}>
               <div><label>قیمت کل (ریال)</label><input type="number" min="1" value={price} onChange={(e) => setPrice(e.target.value)} required /></div>
               <div><label>مقدار (تن)</label><input type="number" min="1" value={qty} onChange={(e) => setQty(e.target.value)} required /></div>
-              <div style={{ gridColumn: '1 / -1' }}><button className="btn">ثبت پیشنهاد</button></div>
+              <div style={{ gridColumn: '1 / -1' }}><button className="btn"><Icon name="check" size={16} /> ثبت پیشنهاد</button></div>
             </form>
-          ) : <p className="muted">مهلت ارسال پیشنهاد به پایان رسیده است.</p>}
+          ) : <div className="alert info" style={{ margin: 0 }}>مهلت ارسال پیشنهاد به پایان رسیده است.</div>}
         </div>
       )}
 
       {/* Bids / ranking */}
-      <h2 className="section-title">رتبه‌بندی پیشنهادها {open && <span className="badge green">به‌روزرسانی زنده</span>}</h2>
+      <h2 className="section-title flex">رتبه‌بندی پیشنهادها {open && <span className="badge green"><span className="live-dot" /> به‌روزرسانی زنده</span>}</h2>
       {confidential ? (
-        <div className="card"><p className="muted">قیمت‌ها در این مناقصه محرمانه است. تنها «باز بودن مناقصه» عمومی است (BR-11).</p></div>
+        <div className="card"><EmptyState icon="lock">قیمت‌ها در این مناقصه محرمانه است. تنها «باز بودن مناقصه» عمومی است (BR-11).</EmptyState></div>
       ) : (
         <>
           {aggregate && (
             <div className="card" style={{ marginBottom: 12 }}>
-              <h3 style={{ marginTop: 0 }}>آمار تجمیعی پیشنهادها</h3>
+              <h3 className="flex" style={{ marginTop: 0 }}><Icon name="chart" size={18} /> آمار تجمیعی پیشنهادها</h3>
               <p className="muted" style={{ marginTop: 0 }}>در این مناقصه فقط آمار تجمیعی و ناشناس قیمت‌ها منتشر می‌شود (BR-11).</p>
-              <div className="grid cols-4">
-                <div className="card kpi"><div className="num">{toFa(aggregate.bidCount)}</div><div className="lbl">تعداد پیشنهاد</div></div>
-                <div className="card kpi"><div className="num">{aggregate.lowestPrice != null ? toman(aggregate.lowestPrice) : '—'}</div><div className="lbl">کمترین قیمت</div></div>
-                <div className="card kpi"><div className="num">{aggregate.averagePrice != null ? toman(aggregate.averagePrice) : '—'}</div><div className="lbl">میانگین قیمت</div></div>
-                <div className="card kpi"><div className="num">{aggregate.highestPrice != null ? toman(aggregate.highestPrice) : '—'}</div><div className="lbl">بیشترین قیمت</div></div>
+              <div className="stat-band">
+                <div className="kpi"><div className="num">{toFa(aggregate.bidCount)}</div><div className="lbl">تعداد پیشنهاد</div></div>
+                <div className="kpi"><div className="num">{aggregate.lowestPrice != null ? toman(aggregate.lowestPrice) : '—'}</div><div className="lbl">کمترین قیمت</div></div>
+                <div className="kpi"><div className="num">{aggregate.averagePrice != null ? toman(aggregate.averagePrice) : '—'}</div><div className="lbl">میانگین قیمت</div></div>
+                <div className="kpi"><div className="num">{aggregate.highestPrice != null ? toman(aggregate.highestPrice) : '—'}</div><div className="lbl">بیشترین قیمت</div></div>
               </div>
             </div>
           )}
           {bids.length === 0 ? (
-            !aggregate && <div className="card"><p className="muted">هنوز پیشنهادی ثبت نشده است.</p></div>
+            !aggregate && <div className="card"><EmptyState icon="gavel">هنوز پیشنهادی ثبت نشده است.</EmptyState></div>
           ) : (
-          <div className="card">
+          <div className="card" style={{ padding: 0 }}>
+          <div className="table-wrap">
           <table>
             <thead>
               <tr>
@@ -225,8 +234,13 @@ export function CompetitionRoom() {
               {bids.map((b) => {
                 const isWinner = awarded && comp.winningBidId === b.id;
                 return (
-                  <tr key={b.id} style={{ background: b.isMine ? 'var(--teal-light)' : isWinner ? '#dcfce7' : undefined }}>
-                    <td>{toFa(b.rank)}{b.isMine && <Badge kind="teal" >پیشنهاد شما</Badge>}</td>
+                  <tr key={b.id} style={{ background: isWinner ? '#dcfce7' : b.isMine ? 'var(--teal-light)' : undefined }}>
+                    <td>
+                      <div className="flex" style={{ gap: 8 }}>
+                        <span className={`rank-badge ${b.rank <= 3 ? 'r' + b.rank : ''}`}>{toFa(b.rank)}</span>
+                        {b.isMine && <Badge kind="teal">شما</Badge>}
+                      </div>
+                    </td>
                     <td className="price">{toman(b.price)}</td>
                     <td>{num(b.quantity)}</td>
                     <td className="muted">v{toFa(b.version)}</td>
@@ -235,31 +249,32 @@ export function CompetitionRoom() {
                     {(closed && isOwner && !comp.identitiesRevealed) && (
                       <td><input type="checkbox" style={{ width: 'auto' }} checked={picked.includes(b.id)} onChange={() => togglePick(b.id)} /></td>
                     )}
-                    {awarded && <td>{isWinner && <Badge kind="green">برنده</Badge>}</td>}
+                    {awarded && <td>{isWinner && <Badge kind="green"><Icon name="check" size={12} /> برنده</Badge>}</td>}
                   </tr>
                 );
               })}
             </tbody>
           </table>
+          </div>
 
           {/* Buyer actions */}
           {isOwner && closed && !comp.identitiesRevealed && (
-            <div style={{ marginTop: 14 }}>
-              <p className="muted">حداکثر سه پیشنهاد برتر را انتخاب کنید؛ پس از آن هویت فروشندگان آشکار می‌شود (BR-6).</p>
+            <div style={{ padding: 16, borderTop: '1px solid var(--line-soft)' }}>
+              <p className="muted" style={{ marginTop: 0 }}>حداکثر سه پیشنهاد برتر را انتخاب کنید؛ پس از آن هویت فروشندگان آشکار می‌شود (BR-6).</p>
               <button className="btn" disabled={picked.length === 0}
                 onClick={() => act(async () => { await api.post(`/api/competitions/${id}/shortlist`, { bidIds: picked }); setMsg('فهرست برتر ثبت و هویت‌ها آشکار شد.'); })}>
-                ثبت فهرست برتر و آشکارسازی هویت
+                <Icon name="check" size={16} /> ثبت فهرست برتر و آشکارسازی هویت{picked.length > 0 ? ` (${toFa(picked.length)})` : ''}
               </button>
             </div>
           )}
           {isOwner && closed && comp.identitiesRevealed && !awarded && (
-            <div style={{ marginTop: 14 }}>
-              <p className="muted">برنده را از میان فهرست برتر انتخاب کنید.</p>
+            <div style={{ padding: 16, borderTop: '1px solid var(--line-soft)' }}>
+              <p className="muted" style={{ marginTop: 0 }}>برنده را از میان فهرست برتر انتخاب کنید.</p>
               <div className="flex" style={{ flexWrap: 'wrap' }}>
                 {bids.filter((b) => b.shortlisted).map((b) => (
                   <button key={b.id} className="btn ghost sm"
                     onClick={() => act(async () => { await api.post(`/api/competitions/${id}/winner`, { bidId: b.id }); setMsg('برنده انتخاب و معامله ثبت شد.'); })}>
-                    انتخاب {b.sellerName} — {toman(b.price)}
+                    <Icon name="check" size={15} /> انتخاب {b.sellerName} — {toman(b.price)}
                   </button>
                 ))}
               </div>
@@ -273,12 +288,35 @@ export function CompetitionRoom() {
       {/* Operator / admin controls */}
       {isMonitor && open && (
         <div className="card" style={{ marginTop: 16 }}>
-          <h3 style={{ marginTop: 0 }}>کنترل اپراتور</h3>
-          <button className="btn ghost sm" onClick={() => act(async () => { await api.post(`/api/competitions/${id}/close`); setMsg('مناقصه بسته شد.'); })}>بستن زودهنگام مناقصه</button>
+          <h3 className="flex" style={{ marginTop: 0 }}><Icon name="shield" size={18} /> کنترل اپراتور</h3>
+          <button className="btn ghost sm" onClick={() => act(async () => { await api.post(`/api/competitions/${id}/close`); setMsg('مناقصه بسته شد.'); })}><Icon name="lock" size={15} /> بستن زودهنگام مناقصه</button>
         </div>
       )}
 
       {awarded && <Alert kind="ok">این مناقصه برنده دارد. معامله ثبت شده و طرفین باید نظرسنجی پس از معامله را تکمیل کنند (BR-9).</Alert>}
+    </div>
+  );
+}
+
+function LifeStepper({ status }) {
+  if (status === 'Cancelled') return null;
+  const order = ['Open', 'Closed', 'Awarded'];
+  const idx = order.indexOf(status);
+  const steps = [
+    { k: 'Open', label: 'دریافت پیشنهاد' },
+    { k: 'Closed', label: 'انتخاب و آشکارسازی' },
+    { k: 'Awarded', label: 'ثبت معامله' },
+  ];
+  return (
+    <div className="stepper">
+      {steps.map((s, i) => (
+        <React.Fragment key={s.k}>
+          {i > 0 && <span className="sep" />}
+          <span className={`st ${i < idx ? 'done' : i === idx ? 'active' : ''}`}>
+            <span className="dot">{i < idx ? '✓' : toFa(i + 1)}</span>{s.label}
+          </span>
+        </React.Fragment>
+      ))}
     </div>
   );
 }
